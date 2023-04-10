@@ -1,13 +1,15 @@
-from django.shortcuts import redirect, render
-from django.views.generic import View
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.generic import View, UpdateView, DeleteView
 from .forms import PostCreateForm
 from .models import Post
+from django.urls import reverse_lazy
 
 # Create your views here.
 class blogListView(View):
     def get(self, request,*args,**kwargs):
+        posts= Post.objects.all()
         context={
-            
+            'posts': posts
         }
         return render(request, 'blog_list.html', context)
     
@@ -32,3 +34,28 @@ class BlogCreateView(View):
             
         }
         return render(request, 'blog_create.html', context)
+
+
+class BlogDetailView(View):
+    def get(self, request, pk,*args,**kwargs):
+        post= get_object_or_404(Post, pk=pk)
+        context={
+            'post':post
+        }
+        return render(request, 'blog_detail.html', context)
+ 
+ 
+class BlogUpdateView(UpdateView):
+     model= Post
+     fields= ['title', 'content']
+     template_name= 'blog_update.html'
+     
+     def get_success_url(self):
+         pk = self.kwargs['pk']
+         return reverse_lazy('blog:detail', kwargs={'pk': pk}) 
+
+
+class BlogDeleteView(DeleteView): 
+    model= Post
+    template_name= 'blog_delete.html'
+    success_url= reverse_lazy('blog:home')    
